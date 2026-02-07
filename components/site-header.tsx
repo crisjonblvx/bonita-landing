@@ -15,6 +15,12 @@ export function SiteHeader() {
 
         <nav className="flex items-center gap-6">
           <Link
+            href="/chat"
+            className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+          >
+            Try Bonita
+          </Link>
+          <Link
             href="/pricing"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >

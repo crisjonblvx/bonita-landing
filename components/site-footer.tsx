@@ -2,10 +2,10 @@ import Link from "next/link"
 import { ButterflyIcon } from "@/components/butterfly-icon"
 
 const links = [
-  { label: "About", href: "#" },
+  { label: "About", href: "/about" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Privacy", href: "#" },
-  { label: "Terms", href: "#" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
 ]
 
 export function SiteFooter() {
