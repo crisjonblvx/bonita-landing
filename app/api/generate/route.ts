@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 
+// Bonita's Representation Anchor — Canon requirement
+// When depicting people, default to Black representation with dignity
+const REPRESENTATION_ANCHOR = `When depicting people, primary subjects should be Black people (African American and diasporic), represented with dignity, realism, and cultural specificity across a full range of skin tones, natural hair textures (locs, twists, coils, fades, braids), and authentic facial features. Beautiful, intentional, honoring.`;
+
+// Anti-substitution and quality guardrails
+const NEGATIVE_PROMPT = `ugly, distorted, low quality, blurry, nsfw, deformed, disfigured, bad anatomy, watermark, signature, do not substitute Black subjects with South Asian or Mediterranean or racially ambiguous representations when Black people are implied, no whitewashing, no lightening of skin tones`;
+
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
@@ -10,6 +17,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Combine user prompt with representation anchor for people-related prompts
+    // The anchor ensures Bonita's values are embedded in every generation
+    const enhancedPrompt = `${prompt}. ${REPRESENTATION_ANCHOR}`;
 
     // Use SDXL model on Replicate for high-quality images
     const response = await fetch("https://api.replicate.com/v1/predictions", {
@@ -22,8 +33,8 @@ export async function POST(req: Request) {
         // SDXL model
         version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
         input: {
-          prompt: prompt,
-          negative_prompt: "ugly, distorted, low quality, blurry, nsfw",
+          prompt: enhancedPrompt,
+          negative_prompt: NEGATIVE_PROMPT,
           width: 1024,
           height: 1024,
           num_outputs: 1,
