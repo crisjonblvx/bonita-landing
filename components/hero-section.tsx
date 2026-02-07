@@ -48,8 +48,8 @@ export function HeroSection() {
       {/* Full background image — bokeh shines through */}
       <div className="absolute inset-0">
         <img
-          src="/images/landing-real-bonita.jpeg"
-          alt=""
+          src="/bonita-portrait.png"
+          alt="Bonita"
           className="h-full w-full object-cover"
           style={{ objectPosition: "80% center" }}
         />
