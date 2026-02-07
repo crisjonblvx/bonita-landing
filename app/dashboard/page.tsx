@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "ai/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { ButterflyIcon } from "@/components/butterfly-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -79,7 +79,25 @@ function ChevronRightIcon() {
   );
 }
 
+function DownloadIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  );
+}
+
 type ChatMode = "chat" | "create" | "voice";
+
+interface ImageGeneration {
+  id: string;
+  prompt: string;
+  status: "starting" | "processing" | "succeeded" | "failed";
+  output?: string[];
+  error?: string;
+}
 
 const placeholders: Record<ChatMode, string> = {
   chat: "Ask Bonita anything...",
@@ -105,6 +123,9 @@ export default function DashboardPage() {
     useChat();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mode, setMode] = useState<ChatMode>("chat");
+  const [createInput, setCreateInput] = useState("");
+  const [generations, setGenerations] = useState<ImageGeneration[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mock user data (replace with real auth later)
@@ -118,11 +139,94 @@ export default function DashboardPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, generations]);
 
   const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
+    if (mode === "chat") {
+      setInput(suggestion);
+    } else {
+      setCreateInput(suggestion);
+    }
   };
+
+  // Poll for image generation status
+  const pollGeneration = async (id: string) => {
+    const maxAttempts = 60; // 2 minutes max
+    let attempts = 0;
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/generate?id=${id}`);
+        const data = await response.json();
+
+        setGenerations((prev) =>
+          prev.map((g) =>
+            g.id === id
+              ? { ...g, status: data.status, output: data.output, error: data.error }
+              : g
+          )
+        );
+
+        if (data.status === "succeeded" || data.status === "failed") {
+          setIsGenerating(false);
+          return;
+        }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        } else {
+          setIsGenerating(false);
+        }
+      } catch (error) {
+        console.error("Poll error:", error);
+        setIsGenerating(false);
+      }
+    };
+
+    poll();
+  };
+
+  const handleCreateSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!createInput.trim() || isGenerating) return;
+
+    setIsGenerating(true);
+    const prompt = createInput;
+    setCreateInput("");
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setGenerations((prev) => [
+          ...prev,
+          { id: Date.now().toString(), prompt, status: "failed", error: data.error },
+        ]);
+        setIsGenerating(false);
+        return;
+      }
+
+      setGenerations((prev) => [
+        ...prev,
+        { id: data.id, prompt, status: data.status || "starting" },
+      ]);
+
+      pollGeneration(data.id);
+    } catch (error) {
+      console.error("Generate error:", error);
+      setIsGenerating(false);
+    }
+  };
+
+  const currentInput = mode === "chat" ? input : createInput;
+  const currentLoading = mode === "chat" ? isLoading : isGenerating;
 
   return (
     <div className="flex h-screen bg-background">
@@ -239,67 +343,158 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <ButterflyIcon className="h-5 w-5 text-primary" />
               <span className="font-semibold text-foreground">Bonita</span>
+              {mode === "create" && (
+                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                  Create Mode
+                </span>
+              )}
             </div>
           </div>
           <ThemeToggle />
         </header>
 
-        {/* Chat Area */}
+        {/* Chat/Create Area */}
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-8">
-            {messages.length === 0 ? (
-              /* Welcome State */
+            {/* Welcome State */}
+            {messages.length === 0 && generations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <ButterflyIcon className="mb-6 h-16 w-16 text-primary opacity-60" />
                 <h2 className="mb-3 text-2xl font-semibold text-foreground">
-                  What&apos;s on your mind?
+                  {mode === "create" ? "What do you want to create?" : "What's on your mind?"}
                 </h2>
                 <p className="mb-8 max-w-md text-muted-foreground">
-                  I&apos;m here to help with clarity and care.
+                  {mode === "create"
+                    ? "Describe an image and Bonita will create it with dignity."
+                    : "I'm here to help with clarity and care."}
                 </p>
 
                 {/* Suggestion Chips */}
                 <div className="flex flex-wrap justify-center gap-2">
-                  {suggestions.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:border-primary/50 hover:bg-card/80"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
+                  {mode === "chat" ? (
+                    suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:border-primary/50 hover:bg-card/80"
+                      >
+                        {suggestion}
+                      </button>
+                    ))
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setCreateInput("A serene portrait with warm golden lighting")}
+                        className="rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:border-primary/50"
+                      >
+                        Portrait with golden light
+                      </button>
+                      <button
+                        onClick={() => setCreateInput("An abstract representation of cultural heritage")}
+                        className="rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground transition-colors hover:border-primary/50"
+                      >
+                        Cultural heritage art
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
-              /* Messages */
+              /* Content */
               <div className="space-y-6">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-4 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800">
-                        <ButterflyIcon className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
+                {/* Chat Messages */}
+                {mode === "chat" &&
+                  messages.map((message) => (
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                        message.role === "user"
-                          ? "bg-slate-700 text-white"
-                          : "bg-slate-800 text-slate-100"
+                      key={message.id}
+                      className={`flex gap-4 ${
+                        message.role === "user" ? "justify-end" : "justify-start"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {message.content}
-                      </p>
+                      {message.role === "assistant" && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800">
+                          <ButterflyIcon className="h-4 w-4 text-primary" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                          message.role === "user"
+                            ? "bg-slate-700 text-white"
+                            : "bg-slate-800 text-slate-100"
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {message.content}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {isLoading && (
+                  ))}
+
+                {/* Image Generations */}
+                {mode === "create" &&
+                  generations.map((gen) => (
+                    <div key={gen.id} className="space-y-3">
+                      {/* User prompt */}
+                      <div className="flex justify-end">
+                        <div className="max-w-[80%] rounded-2xl bg-slate-700 px-4 py-3 text-white">
+                          <p className="flex items-center gap-2">
+                            <PaletteIcon className="h-4 w-4" />
+                            {gen.prompt}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Generation result */}
+                      <div className="flex gap-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800">
+                          <ButterflyIcon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          {(gen.status === "starting" || gen.status === "processing") && (
+                            <div className="rounded-2xl bg-slate-800 p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                <span className="text-sm text-slate-300">
+                                  Creating your image... This may take a moment.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {gen.status === "succeeded" && gen.output && (
+                            <div className="space-y-2">
+                              <div className="overflow-hidden rounded-2xl bg-slate-800">
+                                <img
+                                  src={gen.output[0]}
+                                  alt={gen.prompt}
+                                  className="w-full"
+                                />
+                              </div>
+                              <a
+                                href={gen.output[0]}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 rounded-lg bg-primary/20 px-3 py-1.5 text-sm text-primary hover:bg-primary/30"
+                              >
+                                <DownloadIcon />
+                                Download
+                              </a>
+                            </div>
+                          )}
+
+                          {gen.status === "failed" && (
+                            <div className="rounded-2xl bg-red-500/10 p-4 text-red-400">
+                              <p>Failed to generate image: {gen.error || "Unknown error"}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                {/* Loading indicator for chat */}
+                {mode === "chat" && isLoading && (
                   <div className="flex gap-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800">
                       <ButterflyIcon className="h-4 w-4 animate-pulse text-primary" />
@@ -313,6 +508,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )}
+
                 <div ref={messagesEndRef} />
               </div>
             )}
@@ -322,7 +518,7 @@ export default function DashboardPage() {
         {/* Input Bar */}
         <div className="border-t border-border bg-background p-4">
           <form
-            onSubmit={handleSubmit}
+            onSubmit={mode === "chat" ? handleSubmit : handleCreateSubmit}
             className="mx-auto flex max-w-3xl items-center gap-2"
           >
             {/* Mode Toggles */}
@@ -364,22 +560,29 @@ export default function DashboardPage() {
             {/* Input */}
             <input
               type="text"
-              value={input}
-              onChange={handleInputChange}
+              value={mode === "chat" ? input : createInput}
+              onChange={(e) =>
+                mode === "chat"
+                  ? handleInputChange(e)
+                  : setCreateInput(e.target.value)
+              }
               placeholder={placeholders[mode]}
-              disabled={isLoading || mode === "voice"}
+              disabled={currentLoading || mode === "voice"}
               className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
             />
 
             {/* Send Button */}
             <button
               type="submit"
-              disabled={isLoading || !input.trim() || mode === "voice"}
+              disabled={currentLoading || !currentInput.trim() || mode === "voice"}
               className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <SendIcon />
             </button>
           </form>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            {mode === "create" ? "~25-50 credits per image" : "~1 credit per message"}
+          </p>
         </div>
       </div>
     </div>
