@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ButterflyIcon } from "@/components/butterfly-icon";
 
@@ -19,7 +19,7 @@ function ErrorIcon() {
   );
 }
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -62,42 +62,61 @@ export default function AuthCallbackPage() {
   }, [searchParams, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="text-center">
-        {status === "loading" && (
-          <>
-            <div className="mb-4 flex justify-center">
-              <ButterflyIcon className="h-12 w-12 animate-pulse text-primary" />
-            </div>
-            <p className="text-lg text-foreground">Completing sign in...</p>
-          </>
-        )}
+    <div className="text-center">
+      {status === "loading" && (
+        <>
+          <div className="mb-4 flex justify-center">
+            <ButterflyIcon className="h-12 w-12 animate-pulse text-primary" />
+          </div>
+          <p className="text-lg text-foreground">Completing sign in...</p>
+        </>
+      )}
 
-        {status === "success" && (
-          <>
-            <div className="mb-4 flex justify-center">
-              <ButterflyIcon className="h-12 w-12 text-primary" />
-            </div>
-            <p className="text-lg text-foreground">Welcome to Bonita!</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Redirecting you to the dashboard...
-            </p>
-          </>
-        )}
+      {status === "success" && (
+        <>
+          <div className="mb-4 flex justify-center">
+            <ButterflyIcon className="h-12 w-12 text-primary" />
+          </div>
+          <p className="text-lg text-foreground">Welcome to Bonita!</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Redirecting you to the dashboard...
+          </p>
+        </>
+      )}
 
-        {status === "error" && (
-          <>
-            <div className="mb-4 flex justify-center">
-              <ErrorIcon />
-            </div>
-            <p className="text-lg text-foreground">Something went wrong</p>
-            <p className="mt-2 text-sm text-muted-foreground">{errorMessage}</p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Redirecting you back...
-            </p>
-          </>
-        )}
+      {status === "error" && (
+        <>
+          <div className="mb-4 flex justify-center">
+            <ErrorIcon />
+          </div>
+          <p className="text-lg text-foreground">Something went wrong</p>
+          <p className="mt-2 text-sm text-muted-foreground">{errorMessage}</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Redirecting you back...
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="text-center">
+      <div className="mb-4 flex justify-center">
+        <ButterflyIcon className="h-12 w-12 animate-pulse text-primary" />
       </div>
+      <p className="text-lg text-foreground">Loading...</p>
+    </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Suspense fallback={<LoadingFallback />}>
+        <AuthCallbackContent />
+      </Suspense>
     </div>
   );
 }
