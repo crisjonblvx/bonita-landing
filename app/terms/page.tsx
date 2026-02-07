@@ -5,77 +5,153 @@ export default function TermsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <main className="flex-1">
-        <div className="mx-auto max-w-3xl px-6 py-16">
-          <h1 className="mb-8 text-3xl font-bold text-foreground">Terms of Service</h1>
-          
-          <div className="space-y-8 text-muted-foreground">
-            <p className="text-sm">Last updated: February 2026</p>
 
+      <main className="flex-1 px-6 py-16">
+        <article className="mx-auto max-w-3xl">
+          <h1 className="mb-2 text-3xl font-bold text-foreground">Terms of Service</h1>
+          <p className="mb-12 text-sm text-muted-foreground">
+            Last updated: February 2026
+          </p>
+
+          <div className="prose prose-slate dark:prose-invert max-w-none space-y-10">
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">1. Acceptance of Terms</h2>
-              <p className="leading-relaxed">
-                By accessing or using heyBonita.ai (&quot;the Service&quot;), you agree to be bound by these 
-                Terms of Service. If you do not agree to these terms, please do not use the Service.
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Agreement to Terms
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                By accessing or using heyBonita.ai (&ldquo;the Service&rdquo;), you
+                agree to be bound by these Terms of Service. If you do not agree, please
+                do not use the Service.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">2. Description of Service</h2>
-              <p className="leading-relaxed">
-                Bonita is an AI-powered assistant that provides conversational support, creative 
-                assistance, and information. The Service is provided &quot;as is&quot; and we make no 
-                guarantees about the accuracy or completeness of AI-generated responses.
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Description of Service
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                Bonita is an AI-powered assistant that provides conversational support,
+                creative assistance, and information. The Service uses various AI models
+                to generate responses and content based on your inputs.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">3. User Responsibilities</h2>
-              <p className="leading-relaxed">
-                You agree to use the Service responsibly and not to use it for any illegal, 
-                harmful, or abusive purposes. You are responsible for all content you submit 
-                to the Service.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">4. Intellectual Property</h2>
-              <p className="leading-relaxed">
-                The Service and its original content, features, and functionality are owned by 
-                ContentCreators.life and are protected by international copyright, trademark, 
-                and other intellectual property laws.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">5. Limitation of Liability</h2>
-              <p className="leading-relaxed">
-                ContentCreators.life shall not be liable for any indirect, incidental, special, 
-                consequential, or punitive damages resulting from your use of or inability to 
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                User Accounts
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                You may create an account using Google or Apple sign-in. You are
+                responsible for maintaining the security of your account and all
+                activities that occur under it. You must be at least 13 years old to
                 use the Service.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">6. Changes to Terms</h2>
-              <p className="leading-relaxed">
-                We reserve the right to modify these terms at any time. We will notify users of 
-                any material changes by posting the new Terms of Service on this page.
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Acceptable Use
+              </h2>
+              <p className="mb-3 leading-relaxed text-muted-foreground">
+                You agree not to use the Service to:
+              </p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li>• Generate illegal, harmful, or abusive content</li>
+                <li>• Harass, threaten, or impersonate others</li>
+                <li>• Attempt to circumvent safety measures or usage limits</li>
+                <li>• Use automated systems to access the Service without permission</li>
+                <li>• Violate any applicable laws or regulations</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Credits and Billing
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                The Service uses a credit-based system. Free users receive a limited
+                number of credits monthly. Paid plans provide additional credits and
+                features. Credits do not roll over between billing periods. Refunds are
+                handled on a case-by-case basis.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-foreground">7. Contact</h2>
-              <p className="leading-relaxed">
-                For questions about these Terms, please contact us at{" "}
-                <a href="mailto:hello@contentcreators.life" className="text-primary hover:underline">
-                  hello@contentcreators.life
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Content Ownership
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                You retain ownership of content you input into the Service. You grant us
+                a limited license to process your inputs to provide the Service. You own
+                the outputs generated for you, subject to any third-party rights and
+                applicable law.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                AI-Generated Content
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                Content generated by Bonita is created by AI and may contain errors,
+                inaccuracies, or biases. You are responsible for reviewing and verifying
+                any AI-generated content before relying on it. Bonita is not a
+                substitute for professional advice in legal, medical, financial, or
+                other specialized fields.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Limitation of Liability
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                The Service is provided &ldquo;as is&rdquo; without warranties of any
+                kind. ContentCreators.life shall not be liable for any indirect,
+                incidental, special, consequential, or punitive damages resulting from
+                your use of or inability to use the Service.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Termination
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                We may suspend or terminate your access to the Service at any time for
+                violations of these Terms or for any other reason at our discretion. You
+                may delete your account at any time through the Settings page.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Changes to Terms
+              </h2>
+              <p className="leading-relaxed text-muted-foreground">
+                We may update these Terms from time to time. We will notify you of
+                material changes by posting the new Terms on this page and updating the
+                &ldquo;Last updated&rdquo; date. Continued use of the Service after
+                changes constitutes acceptance of the new Terms.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">Contact</h2>
+              <p className="leading-relaxed text-muted-foreground">
+                For questions about these Terms, contact us at{" "}
+                <a
+                  href="mailto:legal@contentcreators.life"
+                  className="text-primary hover:underline"
+                >
+                  legal@contentcreators.life
                 </a>
               </p>
             </section>
           </div>
-        </div>
+        </article>
       </main>
+
       <SiteFooter />
     </div>
   );
