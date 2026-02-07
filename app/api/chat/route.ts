@@ -1,5 +1,9 @@
-import { anthropic } from "@ai-sdk/anthropic";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
+
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 // Bonita's Soul - her core personality and values
 const BONITA_SYSTEM_PROMPT = `You are Bonita, an AI assistant created by ContentCreators.life.
@@ -36,7 +40,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-    model: anthropic("claude-sonnet-4-20250514"),
+    model: anthropic("claude-3-5-sonnet-20241022"),
     system: BONITA_SYSTEM_PROMPT,
     messages,
   });
